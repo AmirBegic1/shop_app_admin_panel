@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class UploadBannerScreen extends StatefulWidget {
   static const String routeName = '\UpoladBannerScreen';
@@ -39,11 +40,18 @@ class _UploadBannerScreenState extends State<UploadBannerScreen> {
   }
 
   upoladToFireStore() async {
+    EasyLoading.show(status: "Upolading");
     if (_image != null) {
       String imageUrl = await _upoladBannersToStorage(_image);
 
       await _firestore.collection('banners').doc(fileName).set({
         'image': imageUrl,
+      }).whenComplete(() {
+        EasyLoading.dismiss();
+
+        setState(() {
+          _image = null;
+        });
       });
     }
   }
