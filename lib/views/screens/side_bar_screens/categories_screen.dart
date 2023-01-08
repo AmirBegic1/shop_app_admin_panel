@@ -19,7 +19,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   dynamic _image;
-
+  late String categoryName;
   String? fileName;
 
   pickImage() async {
@@ -34,148 +34,171 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
   }
 
-  late String categoryName;
-
   _upoladCategoryBannerToStorage(dynamic image) async {
-    Reference ref = _storage.ref().child('categoryImages').child(fileName!);
+    Reference ref = _storage.ref().child('CategoryImages').child(fileName!);
 
-    UploadTask uploadTask = ref.putData(image);
-    TaskSnapshot snapshot = await uploadTask;
-    String downloadUrl = await snapshot.ref.getDownloadURL();
-    await downloadUrl;
+    UploadTask uploadTask = ref.putData(image!);
+    TaskSnapshot snap = await uploadTask;
+    String downloadUrl = await snap.ref.getDownloadURL();
+    return downloadUrl;
   }
 
   uploadCategory() async {
     EasyLoading.show(status: 'Upolading');
-    if (_formKey.currentState!.validate()) {
-      String imageUrl = await _upoladCategoryBannerToStorage(_image);
 
-      await _firestore.collection('Categories').doc(fileName).set({
-        'image': imageUrl,
-        'categoryName': categoryName,
-      }).whenComplete(() {
-        EasyLoading.dismiss();
-        setState(() {
-          _image = null;
-          _formKey.currentState!.reset();
+    if (_formKey.currentState!.validate()) {
+      if (_image != null) {
+        String imageUrl = await _upoladCategoryBannerToStorage(_image);
+
+        await _firestore.collection('Categories').doc(fileName).set({
+          'CategoryImage': imageUrl,
+          'CategoryName': categoryName,
+        }).whenComplete(() {
+          setState(() {
+            _image = null;
+            _formKey.currentState!.reset();
+            EasyLoading.dismiss();
+          });
         });
-      });
+      } else {
+        EasyLoading.dismiss();
+      }
     } else {
-      print('Lose');
+      EasyLoading.dismiss();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Container(
-              alignment: Alignment.topLeft,
-              padding: EdgeInsets.all(10),
-              child: Text(
-                'Categories',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 36,
-                ),
-              ),
-            ),
-            Divider(color: Colors.grey),
-            Row(
+      child: Column(
+        children: [
+          Form(
+            key: _formKey,
+            child: Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 140,
-                        width: 140,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade500,
-                          border: Border.all(color: Colors.grey.shade800),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: _image != null
-                            ? Image.memory(
-                                _image,
-                                fit: BoxFit.fill,
-                              )
-                            : Center(
-                                child: Center(child: Text('Category')),
-                              ),
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.yellow.shade900,
-                        ),
-                        onPressed: () {
-                          pickImage();
-                        },
-                        child: Center(child: Text(' Upolad Category')),
-                      ),
-                    ],
+                Container(
+                  alignment: Alignment.topLeft,
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Categories',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 36,
+                    ),
                   ),
                 ),
-                Flexible(
-                  child: SizedBox(
-                    width: 200,
-                    child: TextFormField(
-                      onChanged: (value) {
-                        categoryName = value;
-                      },
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Category Name Must Not be Empty';
-                        } else {
-                          return null;
-                        }
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Enter Category Name',
-                        hintText: 'Enter Category Name',
+                Divider(color: Colors.grey),
+                Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(14.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 140,
+                            width: 150,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade500,
+                              border: Border.all(color: Colors.grey.shade800),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: _image != null
+                                ? Image.memory(
+                                    _image,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Center(
+                                    child:
+                                        Center(child: Text('Category Image')),
+                                  ),
+                          ),
+                          SizedBox(height: 20),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.yellow.shade900,
+                            ),
+                            onPressed: () {
+                              pickImage();
+                            },
+                            child: Center(child: Text('Upload Category')),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Flexible(
+                      child: SizedBox(
+                        width: 200,
+                        child: TextFormField(
+                          onChanged: (value) {
+                            categoryName = value;
+                          },
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Category Name Must Not be Empty';
+                            } else {
+                              null;
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Enter Category Name',
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 30),
+                    TextButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.white),
+                          side: MaterialStateProperty.all(
+                              BorderSide(color: Colors.yellow.shade900))),
+                      onPressed: () {},
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.yellow.shade900,
+                      ),
+                      onPressed: uploadCategory,
+                      child: Text('Save'),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Divider(
+                    color: Colors.grey,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'Categories',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.yellow.shade900,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 30),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.yellow.shade900,
-                  ),
-                  onPressed: () {
-                    uploadCategory();
-                  },
-                  child: Text('Save'),
-                ),
+                CategoryWidget(),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Divider(
-                color: Colors.grey,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  'Categories',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.yellow.shade900,
-                  ),
-                ),
-              ),
-            ),
-            CategoryWidget(),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
