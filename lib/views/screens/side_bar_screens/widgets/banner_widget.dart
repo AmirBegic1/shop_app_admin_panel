@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class CategoryWidget extends StatelessWidget {
+class BannerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final Stream<QuerySnapshot> _categoryStream =
-        FirebaseFirestore.instance.collection('Categories').snapshots();
+    final Stream<QuerySnapshot> _bannerStream =
+        FirebaseFirestore.instance.collection('banners').snapshots();
     return StreamBuilder<QuerySnapshot>(
-      stream: _categoryStream,
+      stream: _bannerStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Something went wrong!');
@@ -26,7 +26,7 @@ class CategoryWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'No Categories Added yet',
+                'No Banners Added yet',
                 style: TextStyle(
                   color: Colors.blueGrey,
                   fontSize: 30,
@@ -53,19 +53,15 @@ class CategoryWidget extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: Image.network(
-                        data['CategoryImage'],
-                        width: double.infinity,
-                        fit: BoxFit.fitWidth,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        data['CategoryName'],
+                    Flexible(
+                      child: SizedBox(
+                        height: 130,
+                        width: 150,
+                        child: Image.network(
+                          data['image'],
+                          width: double.infinity,
+                          fit: BoxFit.fitWidth,
+                        ),
                       ),
                     ),
                   ],
