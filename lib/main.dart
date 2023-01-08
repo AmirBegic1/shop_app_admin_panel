@@ -8,7 +8,9 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
+      name: 'shop-app-f27dd',
       options: kIsWeb || Platform.isAndroid
           ? FirebaseOptions(
               apiKey: "AIzaSyB2TB4ALN36fnWof4ktXvFKyCPaRbEYYDY",

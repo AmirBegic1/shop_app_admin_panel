@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
+import 'widgets/cetegory_widget.dart';
+
 class CategoriesScreen extends StatefulWidget {
   static const String routeName = '\CategoriesScreen';
 
@@ -34,32 +36,33 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   late String categoryName;
 
+  _upoladCategoryBannerToStorage(dynamic image) async {
+    Reference ref = _storage.ref().child('categoryImages').child(fileName!);
+
+    UploadTask uploadTask = ref.putData(image);
+    TaskSnapshot snapshot = await uploadTask;
+    String downloadUrl = await snapshot.ref.getDownloadURL();
+    await downloadUrl;
+  }
+
   uploadCategory() async {
     EasyLoading.show(status: 'Upolading');
     if (_formKey.currentState!.validate()) {
       String imageUrl = await _upoladCategoryBannerToStorage(_image);
 
-      await _firestore.collection('categories').doc(fileName).set({
+      await _firestore.collection('Categories').doc(fileName).set({
         'image': imageUrl,
         'categoryName': categoryName,
       }).whenComplete(() {
         EasyLoading.dismiss();
         setState(() {
           _image = null;
+          _formKey.currentState!.reset();
         });
       });
     } else {
       print('Lose');
     }
-  }
-
-  _upoladCategoryBannerToStorage(dynamic image) async {
-    Reference ref = _storage.ref().child('cateogryImages').child(fileName!);
-
-    UploadTask uploadTask = ref.putData(image);
-    TaskSnapshot snapshot = await uploadTask;
-    String downloadUrl = await snapshot.ref.getDownloadURL();
-    await downloadUrl;
   }
 
   @override
@@ -95,9 +98,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           border: Border.all(color: Colors.grey.shade800),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Center(
-                          child: Center(child: Text('Category')),
-                        ),
+                        child: _image != null
+                            ? Image.memory(
+                                _image,
+                                fit: BoxFit.fill,
+                              )
+                            : Center(
+                                child: Center(child: Text('Category')),
+                              ),
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
@@ -107,12 +115,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         onPressed: () {
                           pickImage();
                         },
-                        child: _image != null
-                            ? Image.memory(
-                                _image,
-                                fit: BoxFit.cover,
-                              )
-                            : Center(child: Text('Category')),
+                        child: Center(child: Text(' Upolad Category')),
                       ),
                     ],
                   ),
@@ -150,6 +153,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 ),
               ],
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Divider(
+                color: Colors.grey,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Categories',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.yellow.shade900,
+                  ),
+                ),
+              ),
+            ),
+            CategoryWidget(),
           ],
         ),
       ),
